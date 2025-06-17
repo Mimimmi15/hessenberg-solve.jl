@@ -52,16 +52,17 @@ où H a plus de lignes que de colonnes.
 """
 function hessenberg_solve(H::UpperHessenberg, b)
     m, n = size(H)
-    
+
     for i in 1:(m - 1)
         a, e = H[i, i], H[i+1, i]
         r = sqrt(a^2 + e^2)
         c = a / r
         s = e / r
-        # On applique la rotation de Givens à la ligne i et i+1 de H
-        H[i, i:n] = c * H[i, i:n] + s * H[i+1, i:n]
-        H[i+1, i:n] = -s * H[i, i:n] + c * H[i+1, i:n]
-
+        # On applique la rotation de Givens à la ligne i et i+1 de H 
+        for j in i:n
+            H[i, j] = c * H[i, j] + s * H[i+1, j]
+            H[i+1, j] = -s * H[i+1, j] + c * H[i+1, j]
+        end
          # On applique la rotation à b
         b[i] = c * b[i] + s * b[i+1]
         b[i+1] = -s * b[i] + c * b[i+1]
@@ -69,7 +70,8 @@ function hessenberg_solve(H::UpperHessenberg, b)
 
     R = UpperTriangular(H[1:n, 1:n])
     return backsolve(R, b[1:n])
-end
+end 
+
 
 # vérification
 using Test
