@@ -3,11 +3,29 @@ using LinearAlgebra
 # 1. Modifiez la fonction suivante pour qu'elle renvoie la solution x
 #    du système triangulaire supérieur Rx = b.
 #    Votre fonction ne doit modifier ni R ni b.
+"""
+Résout un système Hessenberg supérieur Hx = b par substitution arrière modifiée.
+
+# Arguments
+- `R`: Matrice Hessenberg supérieure (n×n)
+- `b`: Vecteur du membre de droite (n×1)
+
+# Returns
+- `x`: Solution du système Hx = b
+"""
 function backsolve(R::UpperTriangular, b)
     x = similar(b)
-    ### votre code ici ; ne rien modifier d'autre
-    # ...
-    ###
+    n = size(R, 1)
+    # On parcourt les indices de n jusqu'à 1 (de bas en haut)
+    for i = n:-1:1
+        x[i] = b[i]
+        # On soustrait les termes déjà calculés
+        for j = (i+1):n
+            x[i] -= R[i,j] * x[j]
+        end
+        # On divise par le terme diagonal
+        x[i] /= R[i,i]
+    end
     return x
 end
 
@@ -19,12 +37,38 @@ end
 #    Il n'est pas nécessaire de garder les rotations en mémoire et la
 #    fonction ne doit pas les renvoyer.
 #    Seul le cas réel sera testé ; pas le cas complexe.
+
+"""
+Résout le problème aux moindres carrés min ||Hx - b|| pour une matrice Hessenberg supérieure
+où H a plus de lignes que de colonnes.
+
+# Arguments
+- `H`: Matrice Hessenberg supérieure (m×n) avec m > n
+- `b`: Vecteur du membre de droite (m×1)
+
+# Returns
+- `x`: Solution aux moindres carrés
+- `residual_norm::Float64`: Norme du résidu ||Hx - b||
+"""
 function hessenberg_solve(H::UpperHessenberg, b)
-    ### votre code ici ; ne rien modifier d'autre
-    # ...
-    # x = ...
-    ###
-    return x
+    m, n = size(H)
+    
+    for i in 1:(m - 1)
+        a, e = H[i, i], H[i+1, i]
+        r = sqrt(a^2 + e^2)
+        c = a / r
+        s = e / r
+        # On applique la rotation de Givens à la ligne i et i+1 de H
+        H[i, i:n] = c * H[i, i:n] + s * H[i+1, i:n]
+        H[i+1, i:n] = -s * H[i, i:n] + c * H[i+1, i:n]
+
+         # On applique la rotation à b
+        b[i] = c * b[i] + s * b[i+1]
+        b[i+1] = -s * b[i] + c * b[i+1]
+    end
+
+    R = UpperTriangular(H[1:n, 1:n])
+    return backsolve(R, b[1:n])
 end
 
 # vérification
