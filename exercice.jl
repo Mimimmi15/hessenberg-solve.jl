@@ -60,12 +60,14 @@ function hessenberg_solve(H::UpperHessenberg, b)
         s = e / r
         # On applique la rotation de Givens à la ligne i et i+1 de H 
         for j in i:n
+            z= H[i, j]
             H[i, j] = c * H[i, j] + s * H[i+1, j]
-            H[i+1, j] = -s * H[i+1, j] + c * H[i+1, j]
+            H[i+1, j] = -s * z + c * H[i+1, j]
         end
          # On applique la rotation à b
+        z =  b[i] 
         b[i] = c * b[i] + s * b[i+1]
-        b[i+1] = -s * b[i] + c * b[i+1]
+        b[i+1] = -s * z + c * b[i+1]
     end
 
     R = UpperTriangular(H[1:n, 1:n])
