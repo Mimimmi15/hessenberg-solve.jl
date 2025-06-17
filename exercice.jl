@@ -48,7 +48,6 @@ où H a plus de lignes que de colonnes.
 
 # Returns
 - `x`: Solution aux moindres carrés
-- `residual_norm::Float64`: Norme du résidu ||Hx - b||
 """
 function hessenberg_solve(H::UpperHessenberg, b)
     m, n = size(H)
